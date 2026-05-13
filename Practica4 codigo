@@ -1,0 +1,54 @@
+#include "BluetoothSerial.h"
+
+BluetoothSerial SerialBT;
+
+// Pin del relé
+const int rele = 26;
+
+String mensaje = "";
+
+void setup() {
+  Serial.begin(115200);
+
+  // Iniciar Bluetooth
+  SerialBT.begin("PatiñoAD");
+
+  pinMode(rele, OUTPUT);
+
+  // Relé apagado al iniciar
+  digitalWrite(rele, LOW);
+
+  Serial.println("Bluetooth iniciado");
+}
+
+void loop() {
+
+  while (SerialBT.available()) {
+    char c = SerialBT.read();
+
+    // Detectar fin de línea
+    if (c == '\n') {
+
+      mensaje.trim();
+
+      Serial.println("Mensaje recibido: " + mensaje);
+
+      // Encender relé
+      if (mensaje == "rele_on") {
+        digitalWrite(rele, HIGH);
+        SerialBT.println("RELE ENCENDIDO");
+      }
+
+      // Apagar relé
+      else if (mensaje == "rele_off") {
+        digitalWrite(rele, LOW);
+        SerialBT.println("RELE APAGADO");
+      }
+
+      mensaje = "";
+    }
+    else {
+      mensaje += c;
+    }
+  }
+}
