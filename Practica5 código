@@ -1,0 +1,69 @@
+#include "BluetoothSerial.h"
+BluetoothSerial SerialBT;
+
+// Pines
+const int trigPin = 5;
+const int echoPin = 18;
+const int relePin = 23;
+
+// Variables
+long duracion;
+float distancia;
+
+bool modoAutomatico = true;  // true = auto, false = manual
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin("PatiñoAD"); // Nombre Bluetooth
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(relePin, OUTPUT);
+
+  digitalWrite(relePin, LOW);
+}
+
+void loop() {
+
+  // 🔹 Medir distancia
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duracion = pulseIn(echoPin, HIGH);
+  distancia = duracion * 0.034 / 2;
+
+  // 🔹 Control automático
+  if (modoAutomatico) {
+    if (distancia < 20) {
+      digitalWrite(relePin, LOW); // APAGA
+    } else {
+      digitalWrite(relePin, HIGH); // ENCIENDE
+    }
+  }
+
+  // 🔹 Recibir comandos Bluetooth
+  if (SerialBT.available()) {
+    String comando = SerialBT.readStringUntil('\n');
+
+    if (comando == "AUTO") {
+      modoAutomatico = true;
+    }
+    else if (comando == "MANUAL") {
+      modoAutomatico = false;
+    }
+    else if (comando == "ON") {
+      if (!modoAutomatico) digitalWrite(relePin, HIGH);
+    }
+    else if (comando == "OFF") {
+      if (!modoAutomatico) digitalWrite(relePin, LOW);
+    }
+  }
+
+  // 🔹 Enviar distancia
+  SerialBT.println(distancia);
+
+  delay(500);
+}
