@@ -1,0 +1,53 @@
+#include "BluetoothSerial.h"
+
+BluetoothSerial SerialBT;
+
+String mensaje = "";
+int led = 2; // LED integrado (puedes cambiar el pin)
+bool estadoLED = false; // estado del LED
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin("PatiñoAD"); // Nombre del Bluetooth
+  pinMode(led, OUTPUT);
+  digitalWrite(led, LOW);
+}
+
+void loop() {
+  while (SerialBT.available()) {
+    char c = SerialBT.read();
+
+    if (c == '\n') { // fin del mensaje
+      procesarMensaje(mensaje);
+      mensaje = "";
+    } else {
+      mensaje += c;
+    }
+  }
+}
+
+void procesarMensaje(String msg) {
+  msg.trim();
+
+  if (msg == "btn1") {
+    Serial.println("Hola 👋");
+    SerialBT.println("Hola desde ESP32");
+  }
+  else if (msg == "btn2") {
+    Serial.println("Adiós 👋");
+    SerialBT.println("Adiós desde ESP32");
+  }
+  else if (msg == "btn3") {
+    estadoLED = !estadoLED; // cambia el estado
+
+    digitalWrite(led, estadoLED);
+
+    if (estadoLED) {
+      Serial.println("LED encendido 💡");
+      SerialBT.println("LED encendido");
+    } else {
+      Serial.println("LED apagado");
+      SerialBT.println("LED apagado");
+    }
+  }
+}
