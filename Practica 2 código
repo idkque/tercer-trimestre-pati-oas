@@ -1,0 +1,124 @@
+#include "BluetoothSerial.h"
+
+BluetoothSerial SerialBT;
+
+String mensaje = "";
+
+// LEDs
+int led1 = 2;
+int led2 = 4;
+int led3 = 5;
+int led4 = 18;
+
+// Estados LEDs
+bool estado1 = false;
+bool estado2 = false;
+bool estado3 = false;
+bool estado4 = false;
+
+// Lectura anterior (antirrebote simple)
+bool last1 = HIGH;
+bool last2 = HIGH;
+bool last3 = HIGH;
+bool last4 = HIGH;
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin("PatiñoAD");
+
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(led4, OUTPUT);
+
+}
+
+void loop() {
+
+  // -------- BLUETOOTH --------
+  while (SerialBT.available()) {
+    char c = SerialBT.read();
+
+    if (c == '\n') {
+      procesarMensaje(mensaje);
+      mensaje = "";
+    } else {
+      mensaje += c;
+    }
+  }
+
+  // -------- PULSANTES --------
+
+  // LED1
+  if (activo1) {
+    bool lectura = digitalRead(led1);
+    if (last1 == HIGH && lectura == LOW) {
+      estado1 = !estado1;
+      digitalWrite(led1, estado1);
+    }
+    last1 = lectura;
+  }
+
+  // LED 2
+  if (activo2) {
+    bool lectura = digitalRead(led2);
+    if (last2 == HIGH && lectura == LOW) {
+      estado2 = !estado2;
+      digitalWrite(led2, estado2);
+    }
+    last2 = lectura;
+  }
+
+  // LED 3
+  if (activo3) {
+    bool lectura = digitalRead(led3);
+    if (last3 == HIGH && lectura == LOW) {
+      estado3 = !estado3;
+      digitalWrite(led3, estado3);
+    }
+    last3 = lectura;
+  }
+
+  // LED 4
+  if (activo4) {
+    bool lectura = digitalRead(led4);
+    if (last4 == HIGH && lectura == LOW) {
+      estado4 = !estado4;
+      digitalWrite(led4, estado4);
+    }
+    last4 = lectura;
+  }
+}
+
+// -------- APP --------
+void procesarMensaje(String msg) {
+  msg.trim();
+
+  // BTN1
+  if (msg == "led1") {
+    activo1 = !activo1; // habilita/deshabilita
+    estado1 = !estado1; // cambia LED
+    digitalWrite(led1, estado1);
+  }
+
+  // BTN2
+  else if (msg == "led2") {
+    activo2 = !activo2;
+    estado2 = !estado2;
+    digitalWrite(led2, estado2);
+  }
+
+  // BTN3
+  else if (msg == "led3") {
+    activo3 = !activo3;
+    estado3 = !estado3;
+    digitalWrite(led3, estado3);
+  }
+
+  // BTN4
+  else if (msg == "led4") {
+    activo4 = !activo4;
+    estado4 = !estado4;
+    digitalWrite(led4, estado4);
+  }
+}
